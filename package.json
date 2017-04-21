@@ -1,0 +1,19 @@
+{
+  "name": "ayn-random",
+  "version": "1.0.0",
+  "description": "A Discord bot for various activities",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "repository": "https://bitbucket.org/trentv4/ayn-random",
+  "keywords": [
+    "discord",
+    "bot"
+  ],
+  "author": "Trentv4",
+  "license": "LGPL-2.1+",
+  "dependencies": {
+    "discord.js": "^11.0.0"
+  }
+}

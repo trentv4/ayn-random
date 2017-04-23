@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fs = require("fs")
 
 const client = new (require("discord.js")).Client();
 
@@ -7,9 +7,6 @@ const excludedCommands = [
 	"play",
 	"volume"
 ]
-
-// If any messages contain a term in this file (the trigger), it'll shout the response
-const responseMessages = JSON.parse(fs.readFileSync("responses.json", "utf-8"))
 
 // List of pre-written commands that do something more technical than a in-out response 
 const commandList = {
@@ -132,6 +129,11 @@ const commandList = {
 		message.channel.sendMessage(string)
 	},
 }
+
+// If any messages contain a term in this file (the trigger), it'll shout the response
+let responseMessages = []
+
+if(fs.existsSync("responses.json")) responseMessages = JSON.parse(fs.readFileSync("responses.json", "utf-8"))
 
 // This is console.log without the \n at the end.
 console.write = (message) => {

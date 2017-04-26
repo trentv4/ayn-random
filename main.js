@@ -61,10 +61,10 @@ const commandList = {
 
 			} catch(e) {}
 		})
-
+		
 		let string = ""
 		string += "**" 
-		string += message.guild.members.get(message.author.id).nickname
+		string += getUsername(message)
 		string += "**" 
 		string += ": rolling "
 		string += validCommands.join(", ")
@@ -128,6 +128,19 @@ const commandList = {
 		string += "Commands: \n" + Object.keys(commandList).join(", ")
 		message.channel.sendMessage(string)
 	},
+	deck: (commands, message) => {
+		let cards = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
+		let suits = ["diamonds", "spades", "clubs", "hearts"]
+		let response = ""
+		response += getUsername(message)
+		response += " drew the "
+		response += cards[Math.floor(Math.random()*cards.length)]
+		response += " of "
+		response += suits[Math.floor(Math.random()*suits.length)]
+		response += "."
+		console.write(response)
+		message.channel.sendMessage(response)
+	},
 }
 
 // If any messages contain a term in this file (the trigger), it'll shout the response
@@ -165,10 +178,18 @@ client.on("message", m => {
 
 	if(excludedCommands.includes(command[0])) return
 
-	console.write("Running command by " + m.author.username + ": " + m.content + "   ")
+	console.write("Running command by " + getUsername(m) + ": " + m.content + "   ")
 	if(commandList[command[0]] != null)
 	{
 		commandList[command[0]](command.splice(1), m)
 	}
 	console.write("\n")
 })
+
+function getUsername(message)
+{
+	let trueUsername = message.author.username;
+	let nickName = message.guild.members.get(message.author.id).nickname
+	if(nickName != null) return nickName;
+	return trueUsername;
+}

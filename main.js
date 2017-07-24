@@ -5,10 +5,11 @@ const client = new (require("discord.js")).Client();
 const excludedCommands = [
 	"skip",
 	"play",
-	"volume"
+	"volume",
+  "request"
 ]
 
-// List of pre-written commands that do something more technical than a in-out response 
+// List of pre-written commands that do something more technical than a in-out response
 const commandList = {
 	roll: (commands, message) => {
 		if(commands.length > 20)
@@ -27,7 +28,7 @@ const commandList = {
 				let diceType = 0;
 				let diceAdd = 0;
 
-				if(diceCount > 50) 
+				if(diceCount > 50)
 				{
 					message.channel.sendMessage("No, no more than 50 dice at a time.")
 					return;
@@ -61,11 +62,11 @@ const commandList = {
 
 			} catch(e) {}
 		})
-		
+
 		let string = ""
-		string += "**" 
+		string += "**"
 		string += getUsername(message)
-		string += "**" 
+		string += "**"
 		string += ": rolling "
 		string += validCommands.join(", ")
 		string += ": got "
@@ -100,9 +101,12 @@ const commandList = {
 			trigger: commands[0],
 			response: commands.slice(1).join(" ")
 		}
-		responseMessages.push(mess)
-		message.channel.sendMessage("Command created.")		
-		fs.writeFileSync("responses.json", JSON.stringify(responseMessages))
+    if(mess.trigger.length > 0)
+    {
+      responseMessages.push(mess)
+  		message.channel.sendMessage("Command created.")
+  		fs.writeFileSync("responses.json", JSON.stringify(responseMessages))
+    }
 	},
 	remove_response: (commands, message) => {
 		let newMessages = []
@@ -113,7 +117,7 @@ const commandList = {
 				newMessages.push(responseMessages[i])
 			}
 		}
-		message.channel.sendMessage("Command removed (if it existed).")		
+		message.channel.sendMessage("Command removed (if it existed).")
 		responseMessages = newMessages;
 		fs.writeFileSync("responses.json", JSON.stringify(responseMessages))
 	},
@@ -141,6 +145,13 @@ const commandList = {
 		console.write(response)
 		message.channel.sendMessage(response)
 	},
+	remove_message: (commands, message) => {
+		let channels = message.channel
+		console.log(message.channel)
+		message.channel.messages.forEach((value, index, array) => {
+			console.log(value.content)
+		})
+	}
 }
 
 // If any messages contain a term in this file (the trigger), it'll shout the response

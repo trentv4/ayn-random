@@ -6,151 +6,217 @@ const excludedCommands = [
 	"skip",
 	"play",
 	"volume",
-  "request"
+	"request"
 ]
+
+let rigged = ""
 
 // List of pre-written commands that do something more technical than a in-out response
 const commandList = {
-	roll: (commands, message) => {
-		if(commands.length > 20)
-		{
-			message.channel.sendMessage("No, give me less than that.")
-			return
-		}
+	rig: {
+		visible: false,
+		exec: (commands, message) => {
+			if(commands.length != 1) return;
 
-		let totalRaw = []
-		let totalModified = 0
-		let validCommands = []
-
-		commands.forEach((value, index, array) => {
-			try {
-				let diceCount = parseInt(value.split("d")[0])
-				let diceType = 0;
-				let diceAdd = 0;
-
-				if(diceCount > 50)
-				{
-					message.channel.sendMessage("No, no more than 50 dice at a time.")
-					return;
-				}
-
-				if(value.includes("+"))
-				{
-					let split = value.split("d")[1].split("+");
-					diceType = parseInt(split[0])
-					diceAdd = parseInt(split[1])
-				} else if(value.includes("-"))
-				{
-					let split = value.split("d")[1].split("-");
-					diceType = parseInt(split[0])
-					diceAdd = -1 * parseInt(split[1])
-				} else
-				{
-					diceType = parseInt(value.split("d")[1])
-				}
-
-				validCommands.push(value)
-
-				let rollTotal = 0
-				for(let i = 0; i < diceCount; i++)
-				{
-					rollTotal += Math.ceil(Math.random() * diceType)
-				}
-
-				totalRaw.push(rollTotal)
-				totalModified += rollTotal + diceAdd;
-
-			} catch(e) {}
-		})
-
-		let string = ""
-		string += "**"
-		string += getUsername(message)
-		string += "**"
-		string += ": rolling "
-		string += validCommands.join(", ")
-		string += ": got "
-		string += "**" + totalModified + "**"
-		string += " ("
-		string += totalRaw.join(", ")
-		string += " natural)"
-
-		console.write(totalModified + " rolled, " + totalRaw.join(", ") + " natural")
-
-		message.channel.sendMessage(string)
-
-		return true
-	},
-	set_name: (commands, message) => {
-		let newName = message.content.replace("!set_name ", "")
-		if(newName != null)
-		{
-			message.guild.members.get(client.user.id).setNickname(newName)
-			message.channel.sendMessage("Nickname set to: " + newName)
+			rigged = commands[0]
 		}
 	},
-	set_avatar: (commands, message) => {
-		try {
-			client.user.setAvatar(commands[0]).then(user => {
-				message.channel.sendMessage("Avatar set! Beware, you can only do this a few times every so often.")
-			})
-		} catch(e) {console.log(e)}
-	},
-	create_response: (commands, message) => {
-		let mess = {
-			trigger: commands[0],
-			response: commands.slice(1).join(" ")
-		}
-    if(mess.trigger.length > 0)
-    {
-      responseMessages.push(mess)
-  		message.channel.sendMessage("Command created.")
-  		fs.writeFileSync("responses.json", JSON.stringify(responseMessages))
-    }
-	},
-	remove_response: (commands, message) => {
-		let newMessages = []
-		for(let i = 0; i < responseMessages.length; i++)
-		{
-			if(responseMessages[i].trigger != commands[0])
+	roll: {
+		visible: true,
+		exec: (commands, message) => {
+			if(commands.length > 20)
 			{
-				newMessages.push(responseMessages[i])
+				message.channel.sendMessage("No, give me less than that.")
+				return
+			}
+
+			let totalRaw = []
+			let totalModified = 0
+			let validCommandsRaw = []
+			let validCommands = []
+
+			if(commands.length == 0) {
+				commands.push("1d20")				
+			}
+
+			commands.forEach((value, index, array) => {
+				try {
+					let diceCount = parseInt(value.split("d")[0])
+					let diceType = 0;
+					let diceAdd = 0;
+
+					if(diceCount > 50)
+					{
+						message.channel.sendMessage("No, no more than 50 dice at a time.")
+						return;
+					}
+
+					if(value.includes("+"))
+					{
+						let split = value.split("d")[1].split("+");
+						diceType = parseInt(split[0])
+						diceAdd = parseInt(split[1])
+					} else if(value.includes("-"))
+					{
+						let split = value.split("d")[1].split("-");
+						diceType = parseInt(split[0])
+						diceAdd = -1 * parseInt(split[1])
+					} else
+					{
+						diceType = parseInt(value.split("d")[1])
+					}
+
+					validCommandsRaw.push(value)
+
+					validCommands.push({
+						count: diceCount,
+						type: diceType,
+						bonus: diceAdd
+					})
+				} catch(e) {}
+			})
+
+			for(let i = 0; i < validCommands.length; i++)
+			{
+				let cmd = validCommands[i]
+				let total = 0
+				for(let g = 0; g < cmd.count; g++) 
+				{
+					let parsed = parseInt(rigged)
+					if(!isNaN(parsed) & parsed <= cmd.type)
+					{
+						total += parsed
+						rigged = ""
+					}
+					else if(rigged == "max")
+					{
+						total += cmd.type
+						rigged = ""
+					}
+					else if(rigged == "min")
+					{
+						total += 1
+						rigged = ""
+					}
+					else
+					{
+						total += Math.ceil(Math.random() * cmd.type)
+					}
+				}
+				totalRaw.push(total)
+				totalModified += (total + cmd.bonus)
+			}
+
+			let string = ""
+			string += "**"
+			string += getUsername(message)
+			string += "**"
+			string += ": rolling "
+			string += validCommandsRaw.join(", ")
+			string += ": got "
+			string += "**" + totalModified + "**"
+			string += " ("
+			string += totalRaw.join(", ")
+			string += " natural)"
+
+			console.write(totalModified + " rolled, " + totalRaw.join(", ") + " natural")
+
+			message.channel.sendMessage(string)
+
+			return true
+		}
+	},
+	set_name: {
+		visible: true,
+		exec: (commands, message) => {
+			let newName = message.content.replace("!set_name ", "")
+			if(newName != null)
+			{
+				message.guild.members.get(client.user.id).setNickname(newName)
+				message.channel.sendMessage("Nickname set to: " + newName)
 			}
 		}
-		message.channel.sendMessage("Command removed (if it existed).")
-		responseMessages = newMessages;
-		fs.writeFileSync("responses.json", JSON.stringify(responseMessages))
 	},
-	commands: (commands, message) => {
-		let m = []
-		for(let i = 0; i < responseMessages.length; i++)
-		{
-			m.push(responseMessages[i].trigger)
+	set_avatar: {
+		visible: true,
+		exec: (commands, message) => {
+			try {
+				client.user.setAvatar(commands[0]).then(user => {
+					message.channel.sendMessage("Avatar set! Beware, you can only do this a few times every so often.")
+				})
+			} catch(e) {console.log(e)}
 		}
-		let string = ""
-		string += "Responses: \n" + m.join(", ") + "\n"
-		string += "Commands: \n" + Object.keys(commandList).join(", ")
-		message.channel.sendMessage(string)
 	},
-	deck: (commands, message) => {
-		let cards = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
-		let suits = ["diamonds", "spades", "clubs", "hearts"]
-		let response = ""
-		response += getUsername(message)
-		response += " drew the "
-		response += cards[Math.floor(Math.random()*cards.length)]
-		response += " of "
-		response += suits[Math.floor(Math.random()*suits.length)]
-		response += "."
-		console.write(response)
-		message.channel.sendMessage(response)
+	create_response: {
+		visible: true,
+		exec: (commands, message) => {
+			let mess = {
+				trigger: commands[0],
+				response: commands.slice(1).join(" ")
+			}
+		    if(mess.trigger.length > 0)
+		    {
+		      responseMessages.push(mess)
+		  		message.channel.sendMessage("Command created.")
+		  		fs.writeFileSync("responses.json", JSON.stringify(responseMessages))
+		    }
+		}
 	},
-	remove_message: (commands, message) => {
-		let channels = message.channel
-		console.log(message.channel)
-		message.channel.messages.forEach((value, index, array) => {
-			console.log(value.content)
-		})
+	remove_response: {
+		visible: true,
+		exec: (commands, message) => {
+			let newMessages = []
+			for(let i = 0; i < responseMessages.length; i++)
+			{
+				if(responseMessages[i].trigger != commands[0])
+				{
+					newMessages.push(responseMessages[i])
+				}
+			}
+			message.channel.sendMessage("Command removed (if it existed).")
+			responseMessages = newMessages;
+			fs.writeFileSync("responses.json", JSON.stringify(responseMessages))
+		}
+	},
+	commands: {
+		visible: true,
+		exec: (commands, message) => {
+			let m = []
+			for(let i = 0; i < responseMessages.length; i++)
+			{
+				m.push(responseMessages[i].trigger)
+			}
+			let g = []
+			let gt = Object.keys(commandList);
+			for(let i = 0; i < gt.length; i++)
+			{
+				if(commandList[gt[i]].visible)
+				{
+					g.push(gt[i])
+				}
+			}
+
+			let string = ""
+			string += "Responses: \n" + m.join(", ") + "\n"
+			string += "Commands: \n" + g.join(", ")
+			message.channel.sendMessage(string)
+		}
+	},
+	deck: {
+		visible: true,
+		exec: (commands, message) => {
+			let cards = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
+			let suits = ["diamonds", "spades", "clubs", "hearts"]
+			let response = ""
+			response += getUsername(message)
+			response += " drew the "
+			response += cards[Math.floor(Math.random()*cards.length)]
+			response += " of "
+			response += suits[Math.floor(Math.random()*suits.length)]
+			response += "."
+			console.write(response)
+			message.channel.sendMessage(response)
+		}
 	}
 }
 
@@ -192,7 +258,7 @@ client.on("message", m => {
 	console.write("Running command by " + getUsername(m) + ": " + m.content + "   ")
 	if(commandList[command[0]] != null)
 	{
-		commandList[command[0]](command.splice(1), m)
+		commandList[command[0]].exec(command.splice(1), m)
 	}
 	console.write("\n")
 })

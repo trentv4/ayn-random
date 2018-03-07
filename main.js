@@ -178,6 +178,12 @@ const commandList = {
 			fs.writeFileSync("responses.json", JSON.stringify(responseMessages))
 		}
 	},
+	login: {
+		visible: false,
+		exec: (commands, message) => {
+			client.connect()
+		}
+	},
 	commands: {
 		visible: true,
 		exec: (commands, message) => {
@@ -230,10 +236,16 @@ console.write = (message) => {
 	process.stdout.write(message);
 }
 
-client.login(fs.readFileSync("token.txt", "utf-8"));
-client.on("ready", () => {
-	console.log("Ayn Random is now running");
-})
+client.connect = () => {
+	client.login(fs.readFileSync("token.txt", "utf-8"));
+	client.on("ready", () => {
+		console.log("Ayn Random is now connected");
+	})
+
+	setTimeout(client.connect, 86400000)
+}
+
+client.connect()
 
 // Handle all incoming messages
 client.on("message", m => {

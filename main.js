@@ -36,7 +36,7 @@ const commandList = {
 			let validCommands = []
 
 			if(commands.length == 0) {
-				commands.push("1d20")				
+				commands.push("1d20")               
 			}
 
 			commands.forEach((value, index, array) => {
@@ -154,12 +154,12 @@ const commandList = {
 				trigger: commands[0],
 				response: commands.slice(1).join(" ")
 			}
-		    if(mess.trigger.length > 0)
-		    {
-		      responseMessages.push(mess)
-		  		message.channel.sendMessage("Command created.")
-		  		fs.writeFileSync("responses.json", JSON.stringify(responseMessages))
-		    }
+			if(mess.trigger != null && mess.trigger.length > 0)
+			{
+				responseMessages.push(mess)
+				message.channel.sendMessage("Command created.")
+				fs.writeFileSync("responses.json", JSON.stringify(responseMessages))
+			}
 		}
 	},
 	remove_response: {
@@ -243,7 +243,7 @@ client.on("message", m => {
 
 	for(let i = 0; i < responseMessages.length; i++)
 	{
-		if(lowerCase.includes(responseMessages[i].trigger))
+		if(lowerCase.includes(responseMessages[i].trigger) && !lowerCase.includes("!remove_response"))
 		{
 			m.channel.sendMessage(responseMessages[i].response)
 		}

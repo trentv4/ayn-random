@@ -1,6 +1,5 @@
 const fs = require("fs")
-
-const client = new (require("discord.js")).Client();
+const client = new (require("discord.js")).Client( { autoReconnect: true } );
 
 const excludedCommands = [
 	"skip",
@@ -181,7 +180,7 @@ const commandList = {
 	login: {
 		visible: false,
 		exec: (commands, message) => {
-			client.connect()
+			connect()
 		}
 	},
 	commands: {
@@ -236,18 +235,13 @@ console.write = (message) => {
 	process.stdout.write(message);
 }
 
-client.connect = () => {
-	client.login(fs.readFileSync("token.txt", "utf-8"));
-	client.on("ready", () => {
-		console.log("Ayn Random is now connected");
-	})
+console.log("Connecting...");
+client.login(fs.readFileSync("token.txt", "utf-8"));
 
-	setTimeout(client.connect, 86400000)
-}
+client.on("ready", () => {
+	console.log("Ayn Random is now connected");
+})
 
-client.connect()
-
-// Handle all incoming messages
 client.on("message", m => {
 	if(m.author.id == client.user.id) return;
 
@@ -274,6 +268,8 @@ client.on("message", m => {
 	}
 	console.write("\n")
 })
+
+// Handle all incoming messages
 
 function getUsername(message)
 {

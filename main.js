@@ -236,7 +236,7 @@ console.write = (message) => {
 }
 
 console.log("Connecting...");
-client.login(fs.readFileSync("token.txt", "utf-8"));
+client.login(fs.readFileSync("token.txt", "utf-8").replace(/\r?\n|\r/g, ''));
 
 client.on("ready", () => {
 	console.log("Ayn Random is now connected");

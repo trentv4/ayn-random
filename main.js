@@ -224,6 +224,30 @@ const commandList = {
 			message.channel.sendMessage(response)
 		}
 	},
+	summary: {
+		visible: true,
+		exec: (commands, message) => {
+			let channel = ""
+			try {
+				channel = message.mentions.channels.first()
+				if(channel == undefined) throw("test")
+			} catch(e) {
+				message.channel.send("Try again with a REAL channel.")
+				return
+			}
+			channel.fetchMessages({limit: 100}).then(all => {
+				let messages = []
+				all.forEach(item => {
+					if(item.content[0] == "!") return
+					messages.push(item.content)
+				})
+				let chain = new markov(messages.join(" "))
+				let startPhrase = messages[Math.floor(Math.random() * messages.length)].split(" ")[0]
+				let length = Math.floor((Math.random() * 20) + 40)
+				message.channel.send(chain.start(startPhrase).end(length).process())
+			})
+		}
+	},
 	mimic: {
 		visible: true,
 		exec: (commands, message) => {
@@ -231,10 +255,6 @@ const commandList = {
 			try {
 				target = message.mentions.users.first().id
 			} catch(e) {
-
-			}
-			if(target == "") 
-			{
 				message.channel.send("Try again with a REAL name.")
 				return
 			}

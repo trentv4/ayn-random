@@ -1,5 +1,6 @@
 const fs = require("fs")
 const client = new (require("discord.js")).Client( { autoReconnect: true } );
+const markov = require("markovchain")
 
 const excludedCommands = [
 	"skip",
@@ -222,6 +223,58 @@ const commandList = {
 			console.write(response)
 			message.channel.sendMessage(response)
 		}
+	},
+	mimic: {
+		visible: true,
+		exec: (commands, message) => {
+			let target = ""
+			try {
+				target = message.mentions.users.first().id
+			} catch(e) {
+
+			}
+			if(target == "") 
+			{
+				message.channel.send("Try again with a REAL name.")
+				return
+			}
+			let userLogs = []
+			let guild = message.channel.guild
+			let channels = guild.channels.array()
+
+			let promises = []
+
+			for(let i = 0; i < channels.length; i++) {
+				let channel = channels[i]
+				if(channel.type != "text") continue
+				if(channel.name == "guncle-bunker" || channel.name == "bots" || channel.name == "bot_commands") continue
+
+				promises.push(new Promise((resolve, reject) => {
+					channel.fetchMessages({limit: 100}).then(messages => {
+						let l = []
+						messages.forEach(message => {
+//							console.log(message.author.id)
+							if(message.author.id != target) return
+							if(message.content == "") return
+//							console.log(message.author.id)
+							l.push(message.content)
+						})
+						resolve(l)
+					})
+				}))
+			}
+
+			Promise.all(promises).then(out => {
+				let all = []
+				for(let i = 0; i < out.length; i++) {
+					for(let g = 0; g < out[i].length; g++) {
+						all.push(out[i][g])
+					}
+				}
+				let chain = new markov(all.join(" "))
+				message.channel.send(chain.start(all[Math.floor(Math.random() * all.length)].split(" ")[0]).end((Math.random() * 10) + 20).process())
+			})
+		}
 	}
 }
 
@@ -242,6 +295,8 @@ client.on("ready", () => {
 	console.log("Ayn Random is now connected");
 })
 
+// Handle all incoming messages
+
 client.on("message", m => {
 	if(m.author.id == client.user.id) return;
 
@@ -251,7 +306,7 @@ client.on("message", m => {
 	{
 		if(lowerCase.includes(responseMessages[i].trigger) && !lowerCase.includes("!remove_response"))
 		{
-			m.channel.sendMessage(responseMessages[i].response)
+			m.channel.send(responseMessages[i].response)
 		}
 	}
 
@@ -268,8 +323,6 @@ client.on("message", m => {
 	}
 	console.write("\n")
 })
-
-// Handle all incoming messages
 
 function getUsername(message)
 {

@@ -1,5 +1,16 @@
 const markov = require("markovchain")
 
+function allowedChannel(name) {
+	if(name == "bot_commands" ||
+	   name == "guncle-bunker" ||
+	   name == "debug" ||
+	   name == "some_like_it_bot" ||
+	   name == "supersecret") return false
+	return true
+}
+
+let allowedAnywhere = true
+
 let commands = {
 	summary: {
 		visible: true,
@@ -12,13 +23,16 @@ let commands = {
 				message.channel.send("Try again with a REAL channel.")
 				return
 			}
+			if(!allowedAnywhere && message.channel.id != 465351080344027146) {
+				message.channel.send("Try it in <#465351080344027146>")
+				return
+			}
+			if(!allowedChannel(channel.name)) return
 			channel.fetchMessages({limit: 100}).then(all => {
 				let messages = []
 				all.forEach(item => {
-					if(message.content == "") return
+					if(item.content == "") return
 					if(item.content[0] == "!") return
-					if(message.content.includes("http://")) return
-					if(message.content.includes("https://")) return
 					messages.push(item.content)
 				})
 				let chain = new markov(messages.join(" "))
@@ -32,10 +46,19 @@ let commands = {
 		visible: true,
 		exec: (commands, message) => {
 			let target = ""
-			try {
-				target = message.mentions.users.first().id
-			} catch(e) {
-				message.channel.send("Try again with a REAL name.")
+			if(commands[0] != "all") {
+				try {
+					target = message.mentions.users.first().id
+				} catch(e) {
+					message.channel.send("Try again with a REAL name.")
+					return
+				}
+			}
+			else {
+				target = "all"
+			}
+			if(!allowedAnywhere && message.channel.id != 465351080344027146) {
+				message.channel.send("Try it in <#465351080344027146>")
 				return
 			}
 			let userLogs = []
@@ -47,17 +70,15 @@ let commands = {
 			for(let i = 0; i < channels.length; i++) {
 				let channel = channels[i]
 				if(channel.type != "text") continue
-				if(channel.name == "guncle-bunker" || channel.name == "bots" || channel.name == "bot_commands") continue
+				if(!allowedChannel(channel.name)) continue
 
 				promises.push(new Promise((resolve, reject) => {
 					channel.fetchMessages({limit: 100}).then(messages => {
 						let l = []
 						messages.forEach(message => {
-							if(message.author.id != target) return
+							if(target != "all" && message.author.id != target) return
 							if(message.content == "") return
 							if(message.content[0] == "!") return
-							if(message.content.includes("http://")) return
-							if(message.content.includes("https://")) return
 							l.push(message.content)
 						})
 						resolve(l)

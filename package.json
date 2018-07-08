@@ -2,9 +2,9 @@
   "name": "ayn-random",
   "version": "1.0.0",
   "description": "A Discord bot for various activities",
-  "main": "main.js",
+  "main": "src/main.js",
   "scripts": {
-    "start": "node main.js"
+    "start": "node src/main.js"
   },
   "repository": "https://bitbucket.org/trentv4/ayn-random",
   "keywords": [
@@ -15,7 +15,6 @@
   "license": "LGPL-2.1+",
   "dependencies": {
     "discord.js": "^11.3.2",
-    "markovchain": "^1.0.2",
-    "node-markovify": "^1.0.3"
+    "markovchain": "^1.0.2"
   }
 }

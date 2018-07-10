@@ -1,5 +1,3 @@
-const markov = require("markovchain")
-
 function allowedChannel(name) {
 	if(name == "bot_commands" ||
 	   name == "guncle-bunker" ||
@@ -9,7 +7,95 @@ function allowedChannel(name) {
 	return true
 }
 
+function rand(max) {
+	return Math.floor(Math.random() * max)
+}
+
 let allowedAnywhere = true
+
+function getWords(preInput) {
+	let input = []
+	preInput.forEach(a => {
+		let n = a.split(".")
+		n.forEach(q => {
+			input.push(q)
+		})
+	})
+	let words = {}
+	let parsed = {}
+	input.forEach(a => {
+		let array = a.split(/[\s.]+/)
+		for(let i = 0; i < array.length; i++) {
+			let word = array[i]
+			let nextWord = array[i+1]
+			if(words[word] == null) {
+				words[word] = {}
+				parsed[word] = {
+					size: 0,
+					nextWords: []
+				}
+			}
+
+			if(nextWord == undefined) nextWord = "."
+			words[word][nextWord] = (words[word][nextWord] == null ? 1 : words[word][nextWord] + 1)
+		}
+	})
+
+	let wordsKeys = Object.keys(words)
+	wordsKeys.forEach(wKey => {
+		parsed[wKey].name = wKey
+
+		let nextWordKeys = Object.keys(words[wKey])
+		let total = 0
+		nextWordKeys.forEach(nwKey => {
+			total += total + words[wKey][nwKey]
+			let obj = {
+				name: nwKey,
+				prob: total
+			}
+			parsed[wKey].nextWords.push(obj)
+		})
+
+		parsed[wKey].size = total
+	})
+
+	return parsed
+}
+
+function markov(source, length) {
+	let words = getWords(source)
+	let wordsKeys = Object.keys(words)
+
+	let currentWordKey = wordsKeys[rand(wordsKeys.length)]
+	let output = ""
+
+	for(let i = 0; i < length; i++) {
+		let addition = " " + currentWordKey
+
+		if(i == 0) addition = currentWordKey
+		if(i == 0 && currentWordKey == ".") addition = ""
+		if(currentWordKey == ".") addition = "."
+		if(currentWordKey == "." && output[output.length-1] == "?") addition = ""
+
+		output += addition;
+		let currentWord = words[currentWordKey]
+
+		if(currentWordKey == ".") {
+			currentWordKey = wordsKeys[rand(wordsKeys.length)]
+			continue
+		}
+
+		let nextWord = rand(currentWord.size)
+		for(let g = 0; g < currentWord.nextWords.length; g++) {
+			if(nextWord < currentWord.nextWords[g].prob) {
+				currentWordKey = currentWord.nextWords[g].name
+				break;
+			}
+		}
+	}
+
+	return output
+}
 
 let commands = {
 	summary: {
@@ -35,10 +121,7 @@ let commands = {
 					if(item.content[0] == "!") return
 					messages.push(item.content)
 				})
-				let chain = new markov(messages.join(" "))
-				let startPhrase = messages[Math.floor(Math.random() * messages.length)].split(" ")[0]
-				let length = Math.floor((Math.random() * 20) + 60)
-				message.channel.send(chain.start(startPhrase).end(length).process())
+				message.channel.send(markov(messages, 30 + rand(30)))
 			})
 		}
 	},
@@ -93,8 +176,7 @@ let commands = {
 						all.push(out[i][g])
 					}
 				}
-				let chain = new markov(all.join(" "))
-				message.channel.send(chain.start(all[Math.floor(Math.random() * all.length)].split(" ")[0]).end((Math.random() * 10) + 20).process())
+				message.channel.send(markov(all, 30 + rand(30)))
 			})
 		}
 	}

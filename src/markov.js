@@ -7,6 +7,13 @@ function allowedChannel(name) {
 	return true
 }
 
+function allowedMimicChannel(name) {
+	if(name == "fodder-war-crimes" ||
+	   name == "fodder-mein-kampf" ||
+	   name == "fodder-random") return false
+	return true
+}
+
 function rand(max) {
 	return Math.floor(Math.random() * max)
 }
@@ -154,6 +161,7 @@ let commands = {
 				let channel = channels[i]
 				if(channel.type != "text") continue
 				if(!allowedChannel(channel.name)) continue
+				if(!allowedMimicChannel(channel.name)) continue
 
 				promises.push(new Promise((resolve, reject) => {
 					channel.fetchMessages({limit: 100}).then(messages => {

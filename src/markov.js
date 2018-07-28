@@ -129,6 +129,8 @@ let commands = {
 					messages.push(item.content)
 				})
 				message.channel.send(markov(messages, 30 + rand(30)))
+			}).catch(e => {
+				console.log(error)
 			})
 		}
 	},
@@ -185,6 +187,8 @@ let commands = {
 					}
 				}
 				message.channel.send(markov(all, 30 + rand(30)))
+			}).catch(e => {
+				console.log(error)
 			})
 		}
 	}

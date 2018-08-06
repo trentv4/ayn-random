@@ -118,6 +118,7 @@ let commands = {
 			console.write(totalModified + " rolled, " + totalRaw.join(", ") + " natural")
 
 			message.channel.send(string)
+			message.delete()
 
 			return true
 		}

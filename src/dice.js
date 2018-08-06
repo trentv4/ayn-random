@@ -14,6 +14,7 @@ let commands = {
 		exec: (commands, message) => {
 			if(commands.length != 1) return;
 
+			message.delete()
 			rigged = commands[0]
 		}
 	},

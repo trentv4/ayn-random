@@ -7,6 +7,14 @@ function allowedChannel(name) {
 	return true
 }
 
+function getUsername(message)
+{
+	let trueUsername = message.author.username;
+	let nickName = message.guild.members.get(message.author.id).nickname
+	if(nickName != null) return nickName;
+	return trueUsername;
+}
+
 function allowedMimicChannel(name) {
 	if(name == "fodder-war-crimes" ||
 	   name == "fodder-mein-kampf" ||
@@ -128,7 +136,11 @@ let commands = {
 					if(item.content[0] == "!") return
 					messages.push(item.content)
 				})
-				message.channel.send(markov(messages, 30 + rand(30)))
+
+				let output = "**" + getUsername(message) + "**: " + message.content + ":\n"
+				output += markov(messages, 30 + rand(30))
+				message.channel.send(output)
+				message.delete()
 			}).catch(e => {	console.log(error) })
 		}
 	},
@@ -184,7 +196,11 @@ let commands = {
 						all.push(out[i][g])
 					}
 				}
-				message.channel.send(markov(all, 30 + rand(30)))
+				let newTarget = commands[0] == "all" ? "all" : message.mentions.users.first()
+				let output = "**" + getUsername(message) + "**: " + message.content + ":\n"
+				output += markov(all, 30 + rand(30))
+				message.channel.send(output)
+				message.delete()
 			}).catch(e => {
 				console.log(error)
 			})

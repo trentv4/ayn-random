@@ -129,9 +129,7 @@ let commands = {
 					messages.push(item.content)
 				})
 				message.channel.send(markov(messages, 30 + rand(30)))
-			}).catch(e => {
-				console.log(error)
-			})
+			}).catch(e => {	console.log(error) })
 		}
 	},
 	mimic: {

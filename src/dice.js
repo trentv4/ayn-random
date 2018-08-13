@@ -129,15 +129,16 @@ let commands = {
 		exec: (commands, message) => {
 			let cards = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
 			let suits = ["diamonds", "spades", "clubs", "hearts"]
-			let response = ""
+			let response = "**"
 			response += getUsername(message)
-			response += " drew the "
+			response += "**: drew the **"
 			response += cards[Math.floor(Math.random()*cards.length)]
 			response += " of "
 			response += suits[Math.floor(Math.random()*suits.length)]
-			response += "."
+			response += "**."
 			console.write(response)
 			message.channel.send(response)
+			message.delete()
 		}
 	}
 }

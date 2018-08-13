@@ -14,7 +14,7 @@
   "author": "Trentv4",
   "license": "LGPL-2.1+",
   "dependencies": {
-    "discord.js": "^11.3.2",
+    "discord.js": "^11.4.1",
     "markovchain": "^1.0.2"
   }
 }
